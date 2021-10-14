@@ -8,6 +8,8 @@ import datetime
 import os
 import pandas as pd
 
+publisher_author_ratio = 0.5
+
 # Welcome message
 org_name = "MALTA REPROGRAPHIC RIGHTS ORGANISATION"
 print(f"\n\n{org_name}")
@@ -64,7 +66,7 @@ for path, _, files in os.walk(path):
         output_df = pd.DataFrame()
         # Iterate through yearly sections
         for idx, df_idx in enumerate(sections.index[:-1]):
-            temp = data.loc[sections.index[idx] + 1 : sections.index[idx + 1], :]
+            temp = data.loc[sections.index[idx] + 1 : sections.index[idx + 1], :].copy()
             # Find part of string starting with 20...
             year_idx = data.loc[df_idx, "Name of Book"].find("20")
             year_value = data.loc[df_idx, "Name of Book"][year_idx : year_idx + 4]
@@ -75,7 +77,7 @@ for path, _, files in os.walk(path):
         # And add final section
         idx += 1
         df_idx = sections.index[-1]
-        temp = data.loc[sections.index[idx] + 1 :, :]
+        temp = data.loc[sections.index[idx] + 1 :, :].copy()
         year_idx = data.loc[df_idx, "Name of Book"].find("20")
         year_value = data.loc[df_idx, "Name of Book"][year_idx : year_idx + 4]
         temp.loc[:, "Year of Publication"] = year_value
@@ -174,3 +176,34 @@ unique_ts_id = str(int(date.timestamp()))[-5:]
 all_publisher_df.to_csv(
     f"{path}/__all_books_{date.strftime('%d%m%y')}_{unique_ts_id}.csv"
 )
+
+# Work out publisher and author payment contributions
+publishers = {}
+authors = {}
+
+for idx, book in all_publisher_df.iterrows():
+    publisher = book["Publisher"].strip()
+    book_authors = book["Author(s)"].split(",")
+
+    if publisher not in publishers.keys():
+        publishers[publisher] = 0
+    publishers[publisher] += (
+        publisher_author_ratio * book["Licence amount per book (A+B)xCxDxE"]
+    )
+
+    for author in book_authors:
+        author = author.strip()
+        if author not in authors.keys():
+            authors[author] = 0
+        authors[author] += (
+            (1 - publisher_author_ratio)
+            * book["Licence amount per book (A+B)xCxDxE"]
+            * book["C"]
+        )
+
+authors.pop("")
+print(publishers)
+print(authors)
+
+# ToDo Export publisher payouts as csv
+# ToDo Export author payouts as csv

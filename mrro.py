@@ -4,8 +4,9 @@ ToDo Docs
 Application runs on macOS. No Windows version is available at present
 """
 
-import pandas as pd
+import datetime
 import os
+import pandas as pd
 
 # Welcome message
 org_name = "MALTA REPROGRAPHIC RIGHTS ORGANISATION"
@@ -23,9 +24,12 @@ path = input("-> ")
 all_publisher_df = pd.DataFrame()
 
 # Iterate through all files in folder
-for path, _, files in os.walk(path):
+for path, dir, files in os.walk(path):
     for filename in files:
+        if filename.startswith(".") or filename.startswith("__"):
+            continue
         print(filename)
+        print(path)
 
         # Read data and create DataFrame
         columns = [
@@ -83,6 +87,11 @@ for path, _, files in os.walk(path):
         output_df["Year of Publication"] = output_df["Year of Publication"].astype(int)
         # Remove rows with repeated header rows
         output_df = output_df[~output_df["Name of Book"].str.fullmatch("Name of Book")]
+        output_df = output_df[
+            ~output_df["Name of Book"].str.startswith(
+                "List of books published in"
+            )
+        ]
 
         output_df.loc[:, "Publisher"] = publisher
 
@@ -142,3 +151,10 @@ for path, _, files in os.walk(path):
 
 
 print(all_publisher_df)
+
+# Export all books cleaned csv
+date = datetime.datetime.now()
+unique_ts_id = str(int(date.timestamp()))[-5:]
+all_publisher_df.to_csv(
+    f"{path}/__all_books_{date.strftime('%d%m%y')}_{unique_ts_id}.csv"
+)

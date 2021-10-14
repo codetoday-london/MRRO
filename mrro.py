@@ -1,7 +1,22 @@
 """
-ToDo Docs
+MRRO.py - Reads in separate publisher submissions in the form or spreadsheets (Excel)
+following the default template. Works out payout per book based on given formula.
+Exports CSV files with all books, one with all publisher payments, and one with all
+author payments.
 
-Application runs on macOS. No Windows version is available at present
+All spreadsheets should be a folder with nothing else in the folder (except files
+created by this software itself)
+
+Usage:
+First prompt - enter path of folder with spreadsheets (option-command-c will copy
+the path on macOS when folder is selected in Finder)
+
+Second prompt - enter amount of money to be distributed (total funds - admin charges)
+
+Three files will be created each time software runs with the required outputs as CSV
+documents that can be opened with Excel or any other spreadsheet document
+
+Application runs on macOS only. No Windows version is available at present
 """
 
 import datetime

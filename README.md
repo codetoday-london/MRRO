@@ -28,7 +28,7 @@ Application runs on macOS only. No Windows version is available at present
 Application can be run as a standlone application by running the `MRRO` application in `dist/MRRO/`
 
 Notes:
-- Authors must be seperated by commas
+- Authors must be seperated by commas, for example `John Smith, Mary White`
 - Publisher name should follow the colon in cell `"Name of Company/Self Published Author: "`
 - Rows with entries `"List of books published in YYYY"` are required and should not be modified in anyway, except for changing the year
 - Retail price should not include currency, so input `5.25` for example

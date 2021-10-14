@@ -163,8 +163,8 @@ for path, _, files in os.walk(path):
         all_publisher_df = all_publisher_df.append(output_df)
 
 total_points = all_publisher_df["(A + B) x C x D"].sum()
-print(all_publisher_df)
-print(total_points)
+# print(all_publisher_df)
+# print(total_points)
 
 # Work out E parameter
 # Request user input for total funds to be distributed
@@ -191,6 +191,7 @@ unique_ts_id = str(int(date.timestamp()))[-5:]
 all_publisher_df.to_csv(
     f"{path}/__all_books_{date.strftime('%d%m%y')}_{unique_ts_id}.csv"
 )
+print("\nSpreadsheet with all publishers' books created")
 
 # Work out publisher and author payment contributions
 publishers = {}
@@ -220,5 +221,22 @@ authors.pop("")
 print(publishers)
 print(authors)
 
-# ToDo Export publisher payouts as csv
-# ToDo Export author payouts as csv
+# Export publisher payments as csv
+with open(
+        f"{path}/__publishers_payment{date.strftime('%d%m%y')}_{unique_ts_id}.csv", "w"
+) as file:
+    file.write("Publisher,Payment\n")
+    for publisher, payment in publishers.items():
+        file.write(f"{publisher},{payment}\n")
+
+print("Spreadsheet with all publishers' payments created")
+
+# Export author payments as csv
+with open(
+        f"{path}/__authors_payment{date.strftime('%d%m%y')}_{unique_ts_id}.csv", "w"
+) as file:
+    file.write("Author,Payment\n")
+    for author, payment in authors.items():
+        file.write(f"{author},{payment}\n")
+
+print("Spreadsheet with all authors' payments created")

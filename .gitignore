@@ -118,3 +118,4 @@ dmypy.json
 .idea/modules.xml
 .idea/MRRO.iml
 .idea/vcs.xml
+.DS_Store

@@ -1,5 +1,7 @@
 """
 ToDo Docs
+
+Application runs on macOS. No Windows version is available at present
 """
 
 import pandas as pd
@@ -12,19 +14,18 @@ print("-" * len(org_name))
 print()
 
 # Request user to input folder with all spreadsheets
+# (macOS only)
 print("Enter full path name of folder with spreadsheets")
 print("[Select folder in Finder and use option-command-c to copy path]")
 path = input("-> ")
 
-# Create DataFrame to contain all data for all spreadsheets/publishers
+# Create empty DataFrame to contain all data for all spreadsheets/publishers
 all_publisher_df = pd.DataFrame()
 
 # Iterate through all files in folder
 for path, _, files in os.walk(path):
     for filename in files:
         print(filename)
-        # *path_list, filename = path_and_filename.split("/")
-        # path = "/".join(path_list) + "/"
 
         # Read data and create DataFrame
         columns = [
@@ -44,6 +45,7 @@ for path, _, files in os.walk(path):
         data = data[~data["Name of Book"].str.fullmatch("")]
 
         # Extract publisher from row with Name of Company/Self Published Author
+        # Note, colon required before publisher name
         publisher = (
             data[
                 data.loc[:, "Name of Book"].str.contains("Name of Company")
@@ -53,15 +55,12 @@ for path, _, files in os.walk(path):
             .split(":")[-1]
         )
 
-        # print(publisher)
-
-        # print(data)
         # Find rows with sections headings ("List of books published in ...")
         sections = data[data.iloc[:, 0].str.contains("List of books published in")]
-        # print(sections)
 
         # Create DataFrame containing only rows of books, using sections found above
         output_df = pd.DataFrame()
+        # Iterate through yearly sections
         for idx, df_idx in enumerate(sections.index[:-1]):
             temp = data.loc[sections.index[idx] + 1 : sections.index[idx + 1], :]
             # Find part of string starting with 20...
@@ -71,6 +70,7 @@ for path, _, files in os.walk(path):
 
             output_df = output_df.append(temp)
 
+        # And add final section
         idx += 1
         df_idx = sections.index[-1]
         temp = data.loc[sections.index[idx] + 1 :, :]
@@ -81,6 +81,7 @@ for path, _, files in os.walk(path):
         output_df = output_df.append(temp)
 
         output_df["Year of Publication"] = output_df["Year of Publication"].astype(int)
+        # Remove rows with repeated header rows
         output_df = output_df[~output_df["Name of Book"].str.fullmatch("Name of Book")]
 
         output_df.loc[:, "Publisher"] = publisher
@@ -100,10 +101,8 @@ for path, _, files in os.walk(path):
         output_df["Melitensia (1), Adult (2), Children's (3)"] = output_df[
             "Melitensia (1), Adult (2), Children's (3)"
         ].astype(int)
-        # ToDo Remove years prior to cutoff
 
-        print(output_df["Number of pages"])
-        print(output_df.dtypes)
+        # ToDo Remove years prior to cutoff
 
         # Create Formula terms
         output_df["A"] = (output_df["Number of pages"] - 1) // 100 + 1
@@ -138,8 +137,6 @@ for path, _, files in os.walk(path):
         output_df["(A + B) x C x D"] = (
             (output_df["A"] + output_df["B"]) * output_df["C"] * output_df["D"]
         )
-
-        print(output_df.iloc[0, :])
 
         all_publisher_df = all_publisher_df.append(output_df)
 

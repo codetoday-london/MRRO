@@ -4,7 +4,7 @@ following the default template. Works out payout per book based on given formula
 Exports CSV files with all books, one with all publisher payments, and one with all
 author payments.
 
-All spreadsheets should be a folder with nothing else in the folder (except files
+All spreadsheets should be in a folder with nothing else in the folder (except files
 created by this software itself)
 
 Usage:

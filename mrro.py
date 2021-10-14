@@ -24,12 +24,10 @@ path = input("-> ")
 all_publisher_df = pd.DataFrame()
 
 # Iterate through all files in folder
-for path, dir, files in os.walk(path):
+for path, _, files in os.walk(path):
     for filename in files:
         if filename.startswith(".") or filename.startswith("__"):
             continue
-        print(filename)
-        print(path)
 
         # Read data and create DataFrame
         columns = [
@@ -88,9 +86,7 @@ for path, dir, files in os.walk(path):
         # Remove rows with repeated header rows
         output_df = output_df[~output_df["Name of Book"].str.fullmatch("Name of Book")]
         output_df = output_df[
-            ~output_df["Name of Book"].str.startswith(
-                "List of books published in"
-            )
+            ~output_df["Name of Book"].str.startswith("List of books published in")
         ]
 
         output_df.loc[:, "Publisher"] = publisher
@@ -149,8 +145,28 @@ for path, dir, files in os.walk(path):
 
         all_publisher_df = all_publisher_df.append(output_df)
 
-
+total_points = all_publisher_df["(A + B) x C x D"].sum()
 print(all_publisher_df)
+print(total_points)
+
+# Work out E parameter
+# Request user input for total funds to be distributed
+funds_distributed = float(
+    input(
+        f"\nEnter amount of funds to be distributed\n"
+        f"(Total amount - administrative expenses)\n"
+        f"[Enter number without currency or commas]:\n"
+    )
+)
+
+E = funds_distributed / total_points
+
+all_publisher_df["Funds distributed"] = funds_distributed
+all_publisher_df["Total points (A+B)xCxD for all books"] = total_points
+all_publisher_df["E"] = E
+all_publisher_df["Licence amount per book (A+B)xCxDxE"] = (
+    all_publisher_df["(A + B) x C x D"] * all_publisher_df["E"]
+)
 
 # Export all books cleaned csv
 date = datetime.datetime.now()

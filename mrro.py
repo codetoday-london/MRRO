@@ -22,6 +22,7 @@ Application runs on macOS only. No Windows version is available at present
 import datetime
 import os
 import pandas as pd
+import turtle
 
 publisher_author_ratio = 0.5
 
@@ -33,9 +34,15 @@ print()
 
 # Request user to input folder with all spreadsheets
 # (macOS only)
-print("Enter full path name of folder with spreadsheets")
-print("[Select folder in Finder and use option-command-c to copy path]")
-path = input("-> ")
+turtle.setup(1, 1)
+path = turtle.textinput(
+    "MRRO",
+    "Enter full path name of folder with spreadsheets\n"
+    "[Select folder in Finder and use option-command-c to copy path]"
+)
+# print("Enter full path name of folder with spreadsheets")
+# print("[Select folder in Finder and use option-command-c to copy path]")
+# path = input("-> ")
 
 # Create empty DataFrame to contain all data for all spreadsheets/publishers
 all_publisher_df = pd.DataFrame()
@@ -168,13 +175,20 @@ total_points = all_publisher_df["(A + B) x C x D"].sum()
 
 # Work out E parameter
 # Request user input for total funds to be distributed
-funds_distributed = float(
-    input(
-        f"\nEnter amount of funds to be distributed\n"
-        f"(Total amount - administrative expenses)\n"
-        f"[Enter number without currency or commas]:\n"
+funds_distributed = turtle.numinput(
+    "MRRO",
+    f"\nEnter amount of funds to be distributed\n"
+    f"(Total amount - administrative expenses)\n"
+    f"[Enter number without currency or commas]:\n"
     )
-)
+
+# funds_distributed = float(
+#     input(
+#         f"\nEnter amount of funds to be distributed\n"
+#         f"(Total amount - administrative expenses)\n"
+#         f"[Enter number without currency or commas]:\n"
+#     )
+# )
 
 E = funds_distributed / total_points
 
@@ -218,8 +232,6 @@ for idx, book in all_publisher_df.iterrows():
         )
 
 authors.pop("")
-print(publishers)
-print(authors)
 
 # Export publisher payments as csv
 with open(

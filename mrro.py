@@ -26,11 +26,11 @@ import turtle
 
 publisher_author_ratio = 0.5
 
-# Welcome message
-org_name = "MALTA REPROGRAPHIC RIGHTS ORGANISATION"
-print(f"\n\n{org_name}")
-print("-" * len(org_name))
-print()
+# # Welcome message
+# org_name = "MALTA REPROGRAPHIC RIGHTS ORGANISATION"
+# print(f"\n\n{org_name}")
+# print("-" * len(org_name))
+# print()
 
 # Request user to input folder with all spreadsheets
 # (macOS only)
@@ -205,7 +205,7 @@ unique_ts_id = str(int(date.timestamp()))[-5:]
 all_publisher_df.to_csv(
     f"{path}/__all_books_{date.strftime('%d%m%y')}_{unique_ts_id}.csv"
 )
-print("\nSpreadsheet with all publishers' books created")
+# print("\nSpreadsheet with all publishers' books created")
 
 # Work out publisher and author payment contributions
 publishers = {}
@@ -241,7 +241,7 @@ with open(
     for publisher, payment in publishers.items():
         file.write(f"{publisher},{payment}\n")
 
-print("Spreadsheet with all publishers' payments created")
+# print("Spreadsheet with all publishers' payments created")
 
 # Export author payments as csv
 with open(
@@ -251,4 +251,4 @@ with open(
     for author, payment in authors.items():
         file.write(f"{author},{payment}\n")
 
-print("Spreadsheet with all authors' payments created")
+# print("Spreadsheet with all authors' payments created")

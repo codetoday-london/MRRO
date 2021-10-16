@@ -38,7 +38,7 @@ turtle.setup(1, 1)
 path = turtle.textinput(
     "MRRO",
     "Enter full path name of folder with spreadsheets\n"
-    "[Select folder in Finder and use option-command-c to copy path]"
+    "[Select folder in Finder and use option-command-c to copy path]",
 )
 # print("Enter full path name of folder with spreadsheets")
 # print("[Select folder in Finder and use option-command-c to copy path]")
@@ -64,7 +64,10 @@ for path, _, files in os.walk(path):
         ]
 
         data = pd.read_excel(
-            path + "/" + filename, names=columns, dtype="str", keep_default_na=False
+            path + "/" + filename,
+            names=columns,
+            dtype="str",
+            keep_default_na=False,
         )
 
         # Remove empty rows
@@ -179,8 +182,8 @@ funds_distributed = turtle.numinput(
     "MRRO",
     f"\nEnter amount of funds to be distributed\n"
     f"(Total amount - administrative expenses)\n"
-    f"[Enter number without currency or commas]:\n"
-    )
+    f"[Enter number without currency or commas]:\n",
+)
 
 # funds_distributed = float(
 #     input(
@@ -235,7 +238,7 @@ authors.pop("")
 
 # Export publisher payments as csv
 with open(
-        f"{path}/__publishers_payment{date.strftime('%d%m%y')}_{unique_ts_id}.csv", "w"
+    f"{path}/__publishers_payment{date.strftime('%d%m%y')}_{unique_ts_id}.csv", "w"
 ) as file:
     file.write("Publisher,Payment\n")
     for publisher, payment in publishers.items():
@@ -245,7 +248,7 @@ with open(
 
 # Export author payments as csv
 with open(
-        f"{path}/__authors_payment{date.strftime('%d%m%y')}_{unique_ts_id}.csv", "w"
+    f"{path}/__authors_payment{date.strftime('%d%m%y')}_{unique_ts_id}.csv", "w"
 ) as file:
     file.write("Author,Payment\n")
     for author, payment in authors.items():

@@ -22,27 +22,20 @@ Application runs on macOS only. No Windows version is available at present
 import datetime
 import os
 import pandas as pd
-import turtle
 
 publisher_author_ratio = 0.5
 
-# # Welcome message
-# org_name = "MALTA REPROGRAPHIC RIGHTS ORGANISATION"
-# print(f"\n\n{org_name}")
-# print("-" * len(org_name))
-# print()
+# Welcome message
+org_name = "MALTA REPROGRAPHIC RIGHTS ORGANISATION"
+print(f"\n\n{org_name}")
+print("-" * len(org_name))
+print()
 
 # Request user to input folder with all spreadsheets
 # (macOS only)
-turtle.setup(1, 1)
-path = turtle.textinput(
-    "MRRO",
-    "Enter full path name of folder with spreadsheets\n"
-    "[Select folder in Finder and use option-command-c to copy path]",
-)
-# print("Enter full path name of folder with spreadsheets")
-# print("[Select folder in Finder and use option-command-c to copy path]")
-# path = input("-> ")
+print("Enter full path name of folder with spreadsheets")
+print("[Select folder in Finder and use option-command-c to copy path]")
+path = input("-> ")
 
 # Create empty DataFrame to contain all data for all spreadsheets/publishers
 all_publisher_df = pd.DataFrame()
@@ -178,20 +171,14 @@ total_points = all_publisher_df["(A + B) x C x D"].sum()
 
 # Work out E parameter
 # Request user input for total funds to be distributed
-funds_distributed = turtle.numinput(
-    "MRRO",
-    f"\nEnter amount of funds to be distributed\n"
-    f"(Total amount - administrative expenses)\n"
-    f"[Enter number without currency or commas]:\n",
-)
 
-# funds_distributed = float(
-#     input(
-#         f"\nEnter amount of funds to be distributed\n"
-#         f"(Total amount - administrative expenses)\n"
-#         f"[Enter number without currency or commas]:\n"
-#     )
-# )
+funds_distributed = float(
+    input(
+        f"\nEnter amount of funds to be distributed\n"
+        f"(Total amount - administrative expenses)\n"
+        f"[Enter number without currency or commas]:\n"
+    )
+)
 
 E = funds_distributed / total_points
 
@@ -208,7 +195,7 @@ unique_ts_id = str(int(date.timestamp()))[-5:]
 all_publisher_df.to_csv(
     f"{path}/__all_books_{date.strftime('%d%m%y')}_{unique_ts_id}.csv"
 )
-# print("\nSpreadsheet with all publishers' books created")
+print("\nSpreadsheet with all publishers' books created")
 
 # Work out publisher and author payment contributions
 publishers = {}
@@ -244,7 +231,7 @@ with open(
     for publisher, payment in publishers.items():
         file.write(f"{publisher},{payment}\n")
 
-# print("Spreadsheet with all publishers' payments created")
+print("Spreadsheet with all publishers' payments created")
 
 # Export author payments as csv
 with open(
@@ -254,4 +241,4 @@ with open(
     for author, payment in authors.items():
         file.write(f"{author},{payment}\n")
 
-# print("Spreadsheet with all authors' payments created")
+print("Spreadsheet with all authors' payments created")

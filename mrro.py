@@ -159,13 +159,13 @@ for path, _, files in os.walk(path):
 
         output_df["D"] = output_df["Melitensia (1), Adult (2), Children's (3)"]
 
-        output_df["(A + B) x C x D"] = (
-            (output_df["A"] + output_df["B"]) * output_df["C"] * output_df["D"]
+        output_df["(A + B) x D"] = (
+            (output_df["A"] + output_df["B"]) * output_df["D"]
         )
 
         all_publisher_df = all_publisher_df.append(output_df)
 
-total_points = all_publisher_df["(A + B) x C x D"].sum()
+total_points = all_publisher_df["(A + B) x D"].sum()
 # print(all_publisher_df)
 # print(total_points)
 
@@ -183,10 +183,10 @@ funds_distributed = float(
 E = funds_distributed / total_points
 
 all_publisher_df["Funds distributed"] = funds_distributed
-all_publisher_df["Total points (A+B)xCxD for all books"] = total_points
+all_publisher_df["Total points (A+B)xD for all books"] = total_points
 all_publisher_df["E"] = E
-all_publisher_df["Licence amount per book (A+B)xCxDxE"] = (
-    all_publisher_df["(A + B) x C x D"] * all_publisher_df["E"]
+all_publisher_df["Licence amount per book (A+B)xDxE"] = (
+    all_publisher_df["(A + B) x D"] * all_publisher_df["E"]
 )
 
 # Export all books cleaned csv
@@ -208,7 +208,7 @@ for idx, book in all_publisher_df.iterrows():
     if publisher not in publishers.keys():
         publishers[publisher] = 0
     publishers[publisher] += (
-        publisher_author_ratio * book["Licence amount per book (A+B)xCxDxE"]
+        publisher_author_ratio * book["Licence amount per book (A+B)xDxE"]
     )
 
     for author in book_authors:
@@ -217,7 +217,7 @@ for idx, book in all_publisher_df.iterrows():
             authors[author] = 0
         authors[author] += (
             (1 - publisher_author_ratio)
-            * book["Licence amount per book (A+B)xCxDxE"]
+            * book["Licence amount per book (A+B)xDxE"]
             * book["C"]
         )
 

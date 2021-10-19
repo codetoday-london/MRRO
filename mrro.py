@@ -159,9 +159,7 @@ for path, _, files in os.walk(path):
 
         output_df["D"] = output_df["Melitensia (1), Adult (2), Children's (3)"]
 
-        output_df["(A + B) x D"] = (
-            (output_df["A"] + output_df["B"]) * output_df["D"]
-        )
+        output_df["(A + B) x D"] = (output_df["A"] + output_df["B"]) * output_df["D"]
 
         all_publisher_df = all_publisher_df.append(output_df)
 

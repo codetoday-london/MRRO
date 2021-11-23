@@ -33,7 +33,7 @@ Application runs on macOS only. No Windows version is available at present
 - Rows with entries `"List of books published in YYYY"` are required and should not be modified in anyway, except for changing the year
 - Retail price should not include currency, so input `5.25` for example
 - The column `"Melitensia (1), Adult (2), Children's (3)"` should only include the numbers `1`, `2`, or `3`
-- No other changes should be make to the template spreadsheet
+- **No other changes should be make to the template spreadsheet**
 
 
 

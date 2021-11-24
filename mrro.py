@@ -219,7 +219,7 @@ for idx, book in all_publisher_df.iterrows():
             * book["C"]
         )
 
-authors.pop("")
+# authors.pop("")
 
 # Export publisher payments as csv
 with open(

@@ -210,7 +210,7 @@ for idx, book in all_publisher_df.iterrows():
     )
 
     for author in book_authors:
-        author = author.strip()
+        author = f"{[publisher]} {author.strip().title()}"
         if author not in authors.keys():
             authors[author] = 0
         authors[author] += (

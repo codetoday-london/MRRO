@@ -43,6 +43,7 @@ all_publisher_df = pd.DataFrame()
 # Iterate through all files in folder
 for path, _, files in os.walk(path):
     for filename in files:
+        # print(filename)
         if filename.startswith(".") or filename.startswith("__"):
             continue
 

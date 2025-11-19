@@ -46,7 +46,7 @@ for path, _, files in os.walk(path):
         # print(filename)
         if filename.startswith(".") or filename.startswith("__"):
             continue
-
+        print(f"\nProcessing file: {filename}")
         # Read data and create DataFrame
         columns = [
             "Name of Book",
@@ -117,6 +117,10 @@ for path, _, files in os.walk(path):
         output_df["Number of pages"] = output_df["Number of pages"].astype(int)
 
         output_df["Retail price (inc. VAT)"].replace("", 0, inplace=True)
+        # remove the Euro sign if present
+        output_df["Retail price (inc. VAT)"] = output_df[
+            "Retail price (inc. VAT)"
+        ].str.replace("€", "")
         output_df["Retail price (inc. VAT)"] = output_df[
             "Retail price (inc. VAT)"
         ].astype(float)

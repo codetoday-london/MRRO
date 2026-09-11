@@ -26,6 +26,19 @@ were created.
 
 Application runs on macOS only. No Windows version is available at present
 
+## Validated submission template
+
+Run `python create_validated_template.py MRRO_submission_template.xlsx` to make a
+copy/paste-friendly publisher workbook. Publishers enter or paste book rows in one
+table and the workbook marks invalid rows in red. A submission is not ready until
+each record has a valid year, title, comma-separated authors, positive whole page
+count, positive price, and a classification of 1, 2, or 3. Exact duplicate rows
+and repeated non-empty ISBNs are also reported.
+
+The template is deliberately separate from the legacy spreadsheet format consumed
+by `mrro.py`. It is the new submission format; the distribution script will need a
+small follow-up update to read its `Year of publication` column directly.
+
 ### Notes:
 
 - Authors must be seperated by commas, for example `John Smith, Mary White`

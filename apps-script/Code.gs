@@ -199,7 +199,7 @@ function repairCalculations_(m) {
   if (sh.getMaxRows() < end) sh.insertRowsAfter(sh.getMaxRows(), end - sh.getMaxRows());
   const formulas = [
     '=IF(\'All books\'!F3="","",INT((\'All books\'!F3-1)/100)+1)',
-    '=IF(\'All books\'!G3="","",IF(\'All books\'!I3<>"",\'All books\'!I3,LOOKUP(\'All books\'!G3,{0,0.0000001,10.0000001,20.0000001,50.0000001,80.0000001,100.0000001,150.0000001},{0,1,2,3,4,5,6,7})))',
+    '=IF(\'All books\'!G3="","",LOOKUP(\'All books\'!G3,{0,0.0000001,10.0000001,20.0000001,50.0000001,80.0000001,100.0000001,150.0000001},{0,1,2,3,4,5,6,7}))',
     '=IF(\'All books\'!E3="","",LEN(\'All books\'!E3)-LEN(SUBSTITUTE(\'All books\'!E3,",",""))+1)',
     '=IF(C2="","",1/C2)',
     '=IF(\'All books\'!H3="","",\'All books\'!H3)',
@@ -214,23 +214,23 @@ function repairCalculations_(m) {
   });
 }
 
-function points_(pages, price, classification, override) {
+function points_(pages, price, classification) {
   const a = Math.floor((Number(pages) - 1) / 100) + 1;
-  const p = override === '' || override === null ? Number(price) : Number(override);
+  const p = Number(price);
   const b = p <= 0 ? 0 : p <= 10 ? 1 : p <= 20 ? 2 : p <= 50 ? 3 : p <= 80 ? 4 : p <= 100 ? 5 : p <= 150 ? 6 : 7;
   return (a + b) * Number(classification);
 }
 
 function rebuildPaymentTabs_(m) {
   const years = years_(m), all = m.getSheetByName(B), last = lastBookDataRow_(all);
-  const rows = last < 3 ? [] : all.getRange(3, 1, last - 2, 9).getValues().filter(row => String(row[0]).trim());
+  const rows = last < 3 ? [] : all.getRange(3, 1, last - 2, 8).getValues().filter(row => String(row[0]).trim());
   const allocation = [], publishers = [];
   const publisherSet = new Set();
   rows.forEach(row => {
-    const [publisher, year, , , authors, pages, price, classification, override] = row;
+    const [publisher, year, , , authors, pages, price, classification] = row;
     if (!publisherSet.has(publisher)) { publisherSet.add(publisher); publishers.push(publisher); }
     if (Number(year) < years.start.value || Number(year) > years.end.value || !String(authors).trim()) return;
-    const share = points_(pages, price, classification, override) / String(authors).split(',').length;
+    const share = points_(pages, price, classification) / String(authors).split(',').length;
     String(authors).split(',').forEach(author => allocation.push(["['" + publisher + "'] " + author.trim(), share]));
   });
   const authorAllocation = m.getSheetByName('Author allocation');
@@ -268,7 +268,7 @@ function configureMaster_(m) {
   settings.getRange('B10:B12').setFormulas([['=SUM(Calculations!H2:H)'], ["=SUM('Publisher payments'!B2:B)"], ["=SUM('Author payments'!B2:B)"]]);
   repairCalculations_(m);
   rebuildPaymentTabs_(m);
-  status.getRange('I1').setValue('Publisher email address');
+  status.getRange('I1').setValue('Publisher email for Google Sheets access');
   status.getRange('I1').setFontWeight('bold').setBackground('#fff2cc').setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
   status.setColumnWidth(9, 150);
   status.getRange('I2:I19').setBackground('#fff2cc');
@@ -276,24 +276,25 @@ function configureMaster_(m) {
   start.getRange('B7').setValue('In Import status, select one or more publisher rows. Validate checks the submission year and entries. Import and freeze adds the current-year books to All books and changes only the recorded publisher email from editor to viewer.');
   start.getRange('A10').setValue('6. Prepare the next annual submission');
   start.getRange('B10').setValue('First update the end year in Settings. Then use Reopen and reset to restore the recorded publisher email as editor, clear that publisher workbook, and set it to accept the new submission year only. Refresh replaces only that publisher’s imported books for the current year.');
-  start.getRange('B12').setValue('Yellow = administrator input or action required. In All books: white = current submission year; pale blue = an earlier eligible year; pale red = outside the eligibility range and excluded from calculations. Duplicate ISBN or title rows are red and take priority over these year colours.');
+  start.getRange('B12').setValue('Yellow = administrator input or action required. In All books: white = current submission year; light blue = an earlier eligible year; dark grey = outside the eligibility range and excluded from calculations. Duplicate ISBN or title rows are red and take priority over these year colours.');
   start.getRange('B18').setValue('Create the new publisher workbook from the publisher template, name it for the publisher, enter the publisher’s email address in Import status column I, and put its link in column D. Share it with that publisher as an editor when appropriate.');
   start.getRange('B20').setValue('Publisher sheets check: the publication year exactly matches the current submission year; a book title; an author name using commas between multiple names; positive whole-number pages; a zero, blank or positive price; and classification 1, 2 or 3. A zero or blank price earns no payment. Duplicate ISBNs and duplicate titles are checked only in All books.');
-  if (books.getRange('A2').getDisplayValue() !== 'Duplicate ISBN rows') books.insertRowBefore(2);
-  books.getRange('A2:D2').setValues([['Duplicate ISBN rows', '=IFERROR(TEXTJOIN("; ",TRUE,MAP(UNIQUE(FILTER($D$3:$D,$D$3:$D<>"",COUNTIF($D$3:$D,$D$3:$D)>1)),LAMBDA(isbn,"("&TEXTJOIN(", ",TRUE,FILTER(ROW($D$3:$D),$D$3:$D=isbn))&")"))),"None")', 'Duplicate title rows', '=IFERROR(TEXTJOIN("; ",TRUE,MAP(UNIQUE(FILTER($C$3:$C,$C$3:$C<>"",COUNTIF($C$3:$C,$C$3:$C)>1)),LAMBDA(title,"("&TEXTJOIN(", ",TRUE,FILTER(ROW($C$3:$C),$C$3:$C=title))&")"))),"None")']]);
-  books.getRange('A2:J2').setBackground('#fff2cc').setFontWeight('bold');
-  books.getRange('J3').setFormula('=IF(A3="","",IF(AND(D3<>"",COUNTIF($D:$D,D3)>1),"ERROR — duplicate ISBN","")&IF(AND(C3<>"",COUNTIF($C:$C,C3)>1),IF(AND(D3<>"",COUNTIF($D:$D,D3)>1)," / duplicate title","ERROR — duplicate title"),""))');
-  books.getRange('J3').copyTo(books.getRange('J3:J' + books.getMaxRows()), SpreadsheetApp.CopyPasteType.PASTE_FORMULA);
-  const dataRange = books.getRange(3, 1, books.getMaxRows() - 2, 10);
+  if (!books.getRange('A2').getDisplayValue().startsWith('Duplicate ISBN rows:')) books.insertRowBefore(2);
+  books.getRange('A2').setFormula('="Duplicate ISBN rows: "&IFERROR(TEXTJOIN("; ",TRUE,MAP(UNIQUE(FILTER($D$3:$D,$D$3:$D<>"",COUNTIF($D$3:$D,$D$3:$D)>1)),LAMBDA(isbn,"("&TEXTJOIN(", ",TRUE,FILTER(ROW($D$3:$D),$D$3:$D=isbn))&")"))),"none")&"   |   Duplicate title rows: "&IFERROR(TEXTJOIN("; ",TRUE,MAP(UNIQUE(FILTER($C$3:$C,$C$3:$C<>"",COUNTIF($C$3:$C,$C$3:$C)>1)),LAMBDA(title,"("&TEXTJOIN(", ",TRUE,FILTER(ROW($C$3:$C),$C$3:$C=title))&")"))),"none")');
+  books.getRange('A2:I2').setBackground('#fff2cc').setFontWeight('bold');
+  books.getRange('A2').setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
+  books.getRange('I3').setFormula('=IF(A3="","",IF(AND(D3<>"",COUNTIF($D:$D,D3)>1),"ERROR — duplicate ISBN","")&IF(AND(C3<>"",COUNTIF($C:$C,C3)>1),IF(AND(D3<>"",COUNTIF($D:$D,D3)>1)," / duplicate title","ERROR — duplicate title"),""))');
+  books.getRange('I3').copyTo(books.getRange('I3:I' + books.getMaxRows()), SpreadsheetApp.CopyPasteType.PASTE_FORMULA);
+  const dataRange = books.getRange(3, 1, books.getMaxRows() - 2, 9);
   const retained = books.getConditionalFormatRules().filter(rule => {
     const condition = rule.getBooleanCondition();
     if (!condition) return true;
-    return !condition.getCriteriaValues().some(value => /ISNUMBER\(\$B2\)|COUNTIF\(\$[CD]:\$[CD],\$[CD]2\)/.test(String(value)));
+    return !condition.getCriteriaValues().some(value => /ISNUMBER\(\$B[23]\)|COUNTIF\(\$[CD]:\$[CD],\$[CD][23]\)/.test(String(value)));
   });
   const startRef = 'INDIRECT("' + years.start.ref + '")', endRef = 'INDIRECT("' + years.end.ref + '")';
-  const excluded = SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND(ISNUMBER($B2),OR($B2<' + startRef + ',$B2>' + endRef + '))').setBackground('#f4cccc').setRanges([dataRange]).build();
-  const historic = SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND(ISNUMBER($B2),$B2>=' + startRef + ',$B2<' + endRef + ')').setBackground('#d9eaf7').setRanges([dataRange]).build();
-  const current = SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND(ISNUMBER($B2),$B2=' + endRef + ')').setBackground('#ffffff').setRanges([dataRange]).build();
+  const excluded = SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND(ISNUMBER($B3),OR($B3<' + startRef + ',$B3>' + endRef + '))').setBackground('#a6a6a6').setRanges([dataRange]).build();
+  const historic = SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND(ISNUMBER($B3),$B3>=' + startRef + ',$B3<' + endRef + ')').setBackground('#ddebf7').setRanges([dataRange]).build();
+  const current = SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND(ISNUMBER($B3),$B3=' + endRef + ')').setBackground('#ffffff').setRanges([dataRange]).build();
   const duplicateIsbn = SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($D3<>"",COUNTIF($D:$D,$D3)>1)').setBackground('#f4cccc').setFontColor('#990000').setRanges([dataRange]).build();
   const duplicateTitle = SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($C3<>"",COUNTIF($C:$C,$C3)>1)').setBackground('#f4cccc').setFontColor('#990000').setRanges([dataRange]).build();
   books.setConditionalFormatRules(retained.concat([excluded, historic, current, duplicateIsbn, duplicateTitle]));

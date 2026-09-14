@@ -5,7 +5,7 @@ The administrator workbook collects publisher book lists, checks them, and calcu
 1. Set the fund and eligible years in the yellow Settings cells.
 2. Publishers fill in their own workbook until it says **READY TO SUBMIT**.
 3. In Import status, record the publisher email address in column I. Validate checks the current submission year. Import and freeze changes only that publisher from editor to viewer and adds a fixed copy of the year's books.
-4. All books retains earlier imports. Current-year books are white; earlier eligible books are pale blue; books outside the eligible Settings years are pale red and excluded from payment calculations. The summary row groups matching ISBN and title row numbers in parentheses. Any matching ISBN or non-empty title is flagged, and every matching row is red.
+4. All books retains earlier imports. Current-year books are white; earlier eligible books are light blue; books outside the eligible Settings years are dark grey and excluded from payment calculations. The summary row groups matching ISBN and title row numbers in parentheses. Any matching ISBN or non-empty title is flagged, and every matching row is red.
 
 Reopen and reset clears a publisher's input sheet, sets it to the Settings end year, and changes the recorded publisher from viewer to editor. Refresh replaces only that publisher's imported books for the current year.
 

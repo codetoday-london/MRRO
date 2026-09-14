@@ -180,6 +180,15 @@ function configureAnnualWorkflow() {
   [...new Set(ids)].forEach(id => primePublisher_(SpreadsheetApp.openById(id), years_(master).end.value));
 }
 
+function formatPublisherEmailInputs() {
+  [SpreadsheetApp.getActive(), SpreadsheetApp.openById(ADMIN_TEMPLATE_ID)].forEach(m => {
+    const status = m.getSheetByName(S);
+    status.getRange('I1').setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
+    status.setColumnWidth(9, 150);
+    status.getRange('I2:I19').setBackground('#fff2cc');
+  });
+}
+
 function repairCalculations_(m) {
   const sh = m.getSheetByName('Calculations'), end = sh.getMaxRows();
   const formulas = [
@@ -248,7 +257,9 @@ function configureMaster_(m) {
   repairCalculations_(m);
   rebuildPaymentTabs_(m);
   status.getRange('I1').setValue('Publisher email address');
-  status.getRange('I1').setFontWeight('bold').setBackground('#fff2cc');
+  status.getRange('I1').setFontWeight('bold').setBackground('#fff2cc').setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
+  status.setColumnWidth(9, 150);
+  status.getRange('I2:I19').setBackground('#fff2cc');
   status.getRange(2, 9, status.getMaxRows() - 1, 1).setNumberFormat('@');
   start.getRange('B7').setValue('In Import status, select one or more publisher rows. Validate checks the submission year and entries. Import and freeze adds the current-year books to All books and changes only the recorded publisher email from editor to viewer.');
   start.getRange('A10').setValue('6. Prepare the next annual submission');

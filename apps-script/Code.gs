@@ -71,7 +71,7 @@ function primePublisher_(src, endYear) {
   sh.getRange('A6:B6').setValues([['Submission year', endYear]]);
   sh.getRange('A6').setFontWeight('bold');
   sh.getRange('B6').setNumberFormat('0');
-  sh.getRange('B3').setFormula('=IF(COUNTIF(H9:H1008,"<>")>0,"NOT READY TO SUBMIT — "&COUNTIF(H9:H1008,"<>")&" row(s) need correction.","READY TO SUBMIT")');
+  sh.getRange('B3').setFormula('=IF(COUNTIF(H9:H1008,"?*")>0,"NOT READY TO SUBMIT — "&COUNTIF(H9:H1008,"?*")&" row(s) need correction.","READY TO SUBMIT")');
   const rule = SpreadsheetApp.newDataValidation().requireNumberEqualTo(endYear).setAllowInvalid(false).setHelpText('Enter the current submission year: ' + endYear + '.').build();
   sh.getRange('A9:A1008').setDataValidation(rule);
   const formula = '=IF(COUNTA(A9:G9)=0,"",IF(NOT(AND(ISNUMBER(A9),A9=INT(A9),A9=$B$6)),"Year must be the current submission year ("&$B$6&"). ","")&IF(B9="","Book title is required. ","")&IF(OR(D9="",REGEXMATCH(D9,"(?i)(^| )and( |$)|[&%;]|^,|,$|,,")),"Use comma-separated author names only. ","")&IF(NOT(AND(ISNUMBER(E9),E9=INT(E9),E9>0)),"Pages must be a positive whole number. ","")&IF(NOT(AND(ISNUMBER(F9),F9>0)),"Price must be a positive number. ","")&IF(NOT(AND(ISNUMBER(G9),G9=INT(G9),G9>=1,G9<=3)),"Classification must be 1, 2, or 3.",""))';

@@ -272,7 +272,7 @@ function configureMaster_(m) {
   start.getRange('B18').setValue('Create the new publisher workbook from the publisher template, name it for the publisher, enter the publisher’s email address in Import status column I, and put its link in column D. Share it with that publisher as an editor when appropriate.');
   start.getRange('B20').setValue('Publisher sheets check: the publication year exactly matches the current submission year; a book title; an author name using commas between multiple names; positive whole-number pages; a zero, blank or positive price; and classification 1, 2 or 3. A zero or blank price earns no payment. Duplicate ISBNs are checked only in All books.');
   if (books.getRange('A2').getDisplayValue() !== 'Problem rows') books.insertRowBefore(2);
-  books.getRange('A2:B2').setValues([['Problem rows', '=IFERROR(TEXTJOIN(", ",TRUE,FILTER(ROW(A3:A),J3:J<>"")),"None")']]);
+  books.getRange('A2:B2').setValues([['Problem rows', '=IFERROR(TEXTJOIN("; ",TRUE,MAP(UNIQUE(FILTER($D$3:$D,$J$3:$J<>"")),LAMBDA(isbn,"("&TEXTJOIN(", ",TRUE,FILTER(ROW($D$3:$D),$D$3:$D=isbn))&")"))),"None")']]);
   books.getRange('A2:J2').setBackground('#fff2cc').setFontWeight('bold');
   const dataRange = books.getRange(3, 1, books.getMaxRows() - 2, 10);
   const retained = books.getConditionalFormatRules().filter(rule => {

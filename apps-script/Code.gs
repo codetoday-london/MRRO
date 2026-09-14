@@ -164,6 +164,9 @@ function one_(mode, entry) {
   if (mode === 'refresh') removeCurrentYearRows_(m, publisher, year);
   const allBooks = m.getSheetByName(B), first = lastBookDataRow_(allBooks) + 1;
   if (data.length) allBooks.getRange(first, 1, data.length, 8).setValues(data);
+  // Deleting rows during Refresh can leave the first unused calculation row
+  // pointing at a deleted All books row. Rebuild formulas before any totals.
+  repairCalculations_(m);
   rebuildPaymentTabs_(m);
   const now = new Date();
   s.getRange(r, 2).setValue('IMPORTED - ' + year + ' frozen snapshot');

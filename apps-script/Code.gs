@@ -45,6 +45,7 @@ function years_(m) {
 
 function publisherEmail_(x) {
   const email = String(x[8] || '').trim();
+  if (!email) return '';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw Error('Enter the publisher email address in Import status column I before using this action.');
   return email;
 }
@@ -133,15 +134,15 @@ function one_(mode, entry) {
   if (/archive/i.test(x[1])) throw Error('Archive rows cannot be changed.');
   if (mode === 'reopen') {
     const src = source_(x);
-    setPublisherAccess_(src, email, 'editor');
+    if (email) setPublisherAccess_(src, email, 'editor');
     primePublisher_(src, year);
     src.getSheetByName('Submission').getRange('A9:G1008').clearContent();
     s.getRange(r, 2).setValue('OPEN - current-year submission reopened');
     s.getRange(r, 3).clearContent();
     s.getRange(r, 5).setValue('PENDING - awaiting ' + year + ' submission');
-    s.getRange(r, 6).setValue('OPEN - publisher is editor');
+    s.getRange(r, 6).setValue(email ? 'OPEN - publisher is editor' : 'OPEN - no publisher email recorded');
     s.getRange(r, 7, 1, 2).clearContent();
-    log_(m, publisher, 'Reopened and reset', 'Prepared blank ' + year + ' submission; publisher restored to editor');
+    log_(m, publisher, 'Reopened and reset', 'Prepared blank ' + year + ' submission' + (email ? '; publisher restored to editor' : '; publisher access unchanged'));
     return;
   }
   const { data } = submission_(m, x);
@@ -156,7 +157,7 @@ function one_(mode, entry) {
   if (mode === 'freeze' && existing.length) throw Error('This publisher already has ' + existing.length + ' imported book(s) for ' + year + '. Use Refresh instead.');
   if (mode === 'refresh' && !existing.length) throw Error('No imported books exist for ' + year + '; use Import and freeze.');
   const src = source_(x);
-  setPublisherAccess_(src, email, 'viewer');
+  if (email) setPublisherAccess_(src, email, 'viewer');
   if (mode === 'refresh') removeCurrentYearRows_(m, publisher, year);
   const allBooks = m.getSheetByName(B), first = lastBookDataRow_(allBooks) + 1;
   allBooks.getRange(first, 1, data.length, 8).setValues(data);
@@ -165,7 +166,7 @@ function one_(mode, entry) {
   s.getRange(r, 2).setValue('IMPORTED - ' + year + ' frozen snapshot');
   s.getRange(r, 3).setValue(data.length);
   s.getRange(r, 5).setValue('READY TO SUBMIT - verified');
-  s.getRange(r, 6).setValue('LOCKED - publisher is viewer');
+  s.getRange(r, 6).setValue(email ? 'LOCKED - publisher is viewer' : 'LOCKED - no publisher email recorded');
   s.getRange(r, 7).setValue(now);
   s.getRange(r, 8).setValue(now);
   log_(m, publisher, mode === 'refresh' ? 'Refreshed ' + year : 'Imported ' + year, data.length + ' records; frozen snapshot');

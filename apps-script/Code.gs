@@ -194,14 +194,16 @@ function formatPublisherEmailInputs() {
 }
 
 function repairCalculations_(m) {
-  const sh = m.getSheetByName('Calculations'), end = sh.getMaxRows();
+  const sh = m.getSheetByName('Calculations'), books = m.getSheetByName(B);
+  const end = Math.max(books.getMaxRows() - 1, 2);
+  if (sh.getMaxRows() < end) sh.insertRowsAfter(sh.getMaxRows(), end - sh.getMaxRows());
   const formulas = [
-    '=IF(\'All books\'!F2="","",INT((\'All books\'!F2-1)/100)+1)',
-    '=IF(\'All books\'!G2="","",IF(\'All books\'!I2<>"",\'All books\'!I2,LOOKUP(\'All books\'!G2,{0,0.0000001,10.0000001,20.0000001,50.0000001,80.0000001,100.0000001,150.0000001},{0,1,2,3,4,5,6,7})))',
-    '=IF(\'All books\'!E2="","",LEN(\'All books\'!E2)-LEN(SUBSTITUTE(\'All books\'!E2,",",""))+1)',
+    '=IF(\'All books\'!F3="","",INT((\'All books\'!F3-1)/100)+1)',
+    '=IF(\'All books\'!G3="","",IF(\'All books\'!I3<>"",\'All books\'!I3,LOOKUP(\'All books\'!G3,{0,0.0000001,10.0000001,20.0000001,50.0000001,80.0000001,100.0000001,150.0000001},{0,1,2,3,4,5,6,7})))',
+    '=IF(\'All books\'!E3="","",LEN(\'All books\'!E3)-LEN(SUBSTITUTE(\'All books\'!E3,",",""))+1)',
     '=IF(C2="","",1/C2)',
-    '=IF(\'All books\'!H2="","",\'All books\'!H2)',
-    '=IF(A2="","",IF(AND(\'All books\'!B2>=Settings!$B$14,\'All books\'!B2<=Settings!$B$15),(A2+B2)*E2,0))',
+    '=IF(\'All books\'!H3="","",\'All books\'!H3)',
+    '=IF(A2="","",IF(AND(\'All books\'!B3>=Settings!$B$14,\'All books\'!B3<=Settings!$B$15),(A2+B2)*E2,0))',
     '=IF(F2="","",Settings!$B$4)',
     '=IF(F2="","",F2*G2)'
   ];
@@ -221,7 +223,7 @@ function points_(pages, price, classification, override) {
 
 function rebuildPaymentTabs_(m) {
   const years = years_(m), all = m.getSheetByName(B), last = lastBookDataRow_(all);
-  const rows = last < 2 ? [] : all.getRange(2, 1, last - 1, 9).getValues().filter(row => String(row[0]).trim());
+  const rows = last < 3 ? [] : all.getRange(3, 1, last - 2, 9).getValues().filter(row => String(row[0]).trim());
   const allocation = [], publishers = [];
   const publisherSet = new Set();
   rows.forEach(row => {
@@ -232,21 +234,26 @@ function rebuildPaymentTabs_(m) {
     String(authors).split(',').forEach(author => allocation.push(["['" + publisher + "'] " + author.trim(), share]));
   });
   const authorAllocation = m.getSheetByName('Author allocation');
+  if (authorAllocation.getMaxRows() - 1 < allocation.length) authorAllocation.insertRowsAfter(authorAllocation.getMaxRows(), allocation.length - (authorAllocation.getMaxRows() - 1));
   authorAllocation.getRange(2, 1, authorAllocation.getMaxRows() - 1, 2).clearContent();
   if (allocation.length) authorAllocation.getRange(2, 1, allocation.length, 2).setValues(allocation);
   const authorPayments = m.getSheetByName('Author payments');
   authorPayments.getRange(2, 1, authorPayments.getMaxRows() - 1, 2).clearContent();
-  const authors = [...new Set(allocation.map(row => row[0]))].sort();
+  const authorLabels = new Map();
+  allocation.forEach(row => { if (!authorLabels.has(row[0].toLocaleLowerCase())) authorLabels.set(row[0].toLocaleLowerCase(), row[0]); });
+  const authors = [...authorLabels.values()].sort();
+  if (authorPayments.getMaxRows() - 1 < authors.length) authorPayments.insertRowsAfter(authorPayments.getMaxRows(), authors.length - (authorPayments.getMaxRows() - 1));
   if (authors.length) {
     authorPayments.getRange(2, 1, authors.length, 1).setValues(authors.map(author => [author]));
     authorPayments.getRange('B2').setFormula('=SUMIF(\'Author allocation\'!A:A,A2,\'Author allocation\'!B:B)*Settings!$B$4*0.5');
     authorPayments.getRange('B2').copyTo(authorPayments.getRange(2, 2, authors.length, 1), SpreadsheetApp.CopyPasteType.PASTE_FORMULA);
   }
   const publisherPayments = m.getSheetByName('Publisher payments');
+  if (publisherPayments.getMaxRows() - 1 < publishers.length) publisherPayments.insertRowsAfter(publisherPayments.getMaxRows(), publishers.length - (publisherPayments.getMaxRows() - 1));
   publisherPayments.getRange(2, 1, publisherPayments.getMaxRows() - 1, 2).clearContent();
   if (publishers.length) {
     publisherPayments.getRange(2, 1, publishers.length, 1).setValues(publishers.map(publisher => [publisher]));
-    publisherPayments.getRange('B2').setFormula('=SUMIF(\'All books\'!A:A,A2,Calculations!H:H)*0.5');
+    publisherPayments.getRange('B2').setFormula('=SUMIF(\'All books\'!A3:A,A2,Calculations!H2:H)*0.5');
     publisherPayments.getRange('B2').copyTo(publisherPayments.getRange(2, 2, publishers.length, 1), SpreadsheetApp.CopyPasteType.PASTE_FORMULA);
   }
 }
@@ -258,6 +265,7 @@ function configureMaster_(m) {
   settings.getRange('B5').setValue('Annual submissions are ready to be prepared.');
   settings.getRange('A8').setValue('Historic-data note');
   settings.getRange('B8').setValue('All books retains earlier imports. The eligibility years decide which books are included in the calculation.');
+  settings.getRange('B10:B12').setFormulas([['=SUM(Calculations!H2:H)'], ["=SUM('Publisher payments'!B2:B)"], ["=SUM('Author payments'!B2:B)"]]);
   repairCalculations_(m);
   rebuildPaymentTabs_(m);
   status.getRange('I1').setValue('Publisher email address');
@@ -268,10 +276,10 @@ function configureMaster_(m) {
   start.getRange('B7').setValue('In Import status, select one or more publisher rows. Validate checks the submission year and entries. Import and freeze adds the current-year books to All books and changes only the recorded publisher email from editor to viewer.');
   start.getRange('A10').setValue('6. Prepare the next annual submission');
   start.getRange('B10').setValue('First update the end year in Settings. Then use Reopen and reset to restore the recorded publisher email as editor, clear that publisher workbook, and set it to accept the new submission year only. Refresh replaces only that publisher’s imported books for the current year.');
-  start.getRange('B12').setValue('Yellow = administrator input or action required. In All books: white = current submission year; pale blue = an earlier eligible year; pale red = outside the eligibility range and excluded from calculations. Duplicate ISBN rows are red and take priority over these year colours.');
+  start.getRange('B12').setValue('Yellow = administrator input or action required. In All books: white = current submission year; pale blue = an earlier eligible year; pale red = outside the eligibility range and excluded from calculations. Duplicate ISBN or title rows are red and take priority over these year colours.');
   start.getRange('B18').setValue('Create the new publisher workbook from the publisher template, name it for the publisher, enter the publisher’s email address in Import status column I, and put its link in column D. Share it with that publisher as an editor when appropriate.');
   start.getRange('B20').setValue('Publisher sheets check: the publication year exactly matches the current submission year; a book title; an author name using commas between multiple names; positive whole-number pages; a zero, blank or positive price; and classification 1, 2 or 3. A zero or blank price earns no payment. Duplicate ISBNs and duplicate titles are checked only in All books.');
-  if (books.getRange('A2').getDisplayValue() !== 'Problem rows') books.insertRowBefore(2);
+  if (books.getRange('A2').getDisplayValue() !== 'Duplicate ISBN rows') books.insertRowBefore(2);
   books.getRange('A2:D2').setValues([['Duplicate ISBN rows', '=IFERROR(TEXTJOIN("; ",TRUE,MAP(UNIQUE(FILTER($D$3:$D,$D$3:$D<>"",COUNTIF($D$3:$D,$D$3:$D)>1)),LAMBDA(isbn,"("&TEXTJOIN(", ",TRUE,FILTER(ROW($D$3:$D),$D$3:$D=isbn))&")"))),"None")', 'Duplicate title rows', '=IFERROR(TEXTJOIN("; ",TRUE,MAP(UNIQUE(FILTER($C$3:$C,$C$3:$C<>"",COUNTIF($C$3:$C,$C$3:$C)>1)),LAMBDA(title,"("&TEXTJOIN(", ",TRUE,FILTER(ROW($C$3:$C),$C$3:$C=title))&")"))),"None")']]);
   books.getRange('A2:J2').setBackground('#fff2cc').setFontWeight('bold');
   books.getRange('J3').setFormula('=IF(A3="","",IF(AND(D3<>"",COUNTIF($D:$D,D3)>1),"ERROR — duplicate ISBN","")&IF(AND(C3<>"",COUNTIF($C:$C,C3)>1),IF(AND(D3<>"",COUNTIF($D:$D,D3)>1)," / duplicate title","ERROR — duplicate title"),""))');

@@ -22,3 +22,5 @@ Each publisher workbook checks that the year is a whole number from 2000 to 2200
 Each eligible book receives points for page count and retail-price band, multiplied by its classification. The fund divided by total points gives the value of one point; the book licence amount is its points multiplied by that value.
 
 The workbook totals licence amounts by publisher and splits each between publisher and author. Multiple authors share the author portion equally. Before using results, check that the licence total and both payment totals equal the Settings fund.
+
+The calculation and payment totals use open-ended ranges and rebuild from the book rows below the summary line. They therefore include later imports automatically; the calculation sheet is expanded when required.

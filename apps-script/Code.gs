@@ -268,18 +268,19 @@ function configureMaster_(m) {
   start.getRange('B7').setValue('In Import status, select one or more publisher rows. Validate checks the submission year and entries. Import and freeze adds the current-year books to All books and changes only the recorded publisher email from editor to viewer.');
   start.getRange('A10').setValue('6. Prepare the next annual submission');
   start.getRange('B10').setValue('First update the end year in Settings. Then use Reopen and reset to restore the recorded publisher email as editor, clear that publisher workbook, and set it to accept the new submission year only. Refresh replaces only that publisher’s imported books for the current year.');
-  start.getRange('B12').setValue('Yellow = administrator input or action required. In All books: white = current submission year; pale blue = an earlier eligible year; pale red = outside the eligibility range and excluded from calculations.');
+  start.getRange('B12').setValue('Yellow = administrator input or action required. In All books: white = current submission year; pale blue = an earlier eligible year; pale red = outside the eligibility range and excluded from calculations. Duplicate ISBN rows are red and take priority over these year colours.');
   start.getRange('B18').setValue('Create the new publisher workbook from the publisher template, name it for the publisher, enter the publisher’s email address in Import status column I, and put its link in column D. Share it with that publisher as an editor when appropriate.');
   start.getRange('B20').setValue('Publisher sheets check: the publication year exactly matches the current submission year; a book title; an author name using commas between multiple names; positive whole-number pages; a positive price; and classification 1, 2 or 3. Duplicate ISBNs are checked only in All books.');
   const dataRange = books.getRange(2, 1, books.getMaxRows() - 1, 10);
   const retained = books.getConditionalFormatRules().filter(rule => {
     const condition = rule.getBooleanCondition();
     if (!condition) return true;
-    return !condition.getCriteriaValues().some(value => String(value).includes('ISNUMBER($B2)'));
+    return !condition.getCriteriaValues().some(value => /ISNUMBER\(\$B2\)|COUNTIF\(\$D:\$D,\$D2\)/.test(String(value)));
   });
   const startRef = 'INDIRECT("' + years.start.ref + '")', endRef = 'INDIRECT("' + years.end.ref + '")';
   const excluded = SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND(ISNUMBER($B2),OR($B2<' + startRef + ',$B2>' + endRef + '))').setBackground('#f4cccc').setRanges([dataRange]).build();
   const historic = SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND(ISNUMBER($B2),$B2>=' + startRef + ',$B2<' + endRef + ')').setBackground('#d9eaf7').setRanges([dataRange]).build();
   const current = SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND(ISNUMBER($B2),$B2=' + endRef + ')').setBackground('#ffffff').setRanges([dataRange]).build();
-  books.setConditionalFormatRules(retained.concat([excluded, historic, current]));
+  const duplicateIsbn = SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=AND($D2<>"",COUNTIF($D:$D,$D2)>1)').setBackground('#f4cccc').setFontColor('#990000').setRanges([dataRange]).build();
+  books.setConditionalFormatRules(retained.concat([excluded, historic, current, duplicateIsbn]));
 }

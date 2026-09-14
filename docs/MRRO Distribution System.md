@@ -10,3 +10,9 @@ The administrator workbook collects publisher book lists, checks them, and calcu
 Reset clears one publisher's imported books and returns their register row to open/pending. Reopen changes that publisher back from viewer to editor. Refresh replaces a previous frozen import.
 
 When adding a publisher, insert a row above the procedure block. Enter only the publisher name and workbook link; the status, count, lock and date columns are automatic.
+
+## How payments are calculated
+
+Each eligible book receives points for page count and retail-price band, multiplied by its classification. The fund divided by total points gives the value of one point; the book licence amount is its points multiplied by that value.
+
+The workbook totals licence amounts by publisher and splits each between publisher and author. Multiple authors share the author portion equally. Before using results, check that the licence total and both payment totals equal the Settings fund.

@@ -6,8 +6,8 @@ This is a short guide for the administrator. The workbook collects one publisher
 
 1. In **Settings**, enter the distributable fund and the earliest and latest eligible publication years in the yellow cells. The latest year is the year publishers are currently submitting.
 2. Give each publisher their own copy of the Publisher Template. In **Import status**, record the publisher name, the sheet link, and—if the system should manage their access—their Google-account email address in column I.
-3. The publisher completes their sheet. They must correct any messages until it says **READY TO SUBMIT**. An empty sheet is also valid: it simply means there are no books to add that year.
-4. In **Import status**, select one or more adjacent publisher rows and use the **MRRO administration** menu. The same action applies to every selected row.
+3. The publisher completes their sheet. They must correct any messages until it says **READY TO SUBMIT**. There is no Submit button: the publisher tells the administrator separately when they are ready. An empty sheet is also valid: it simply means there are no books to add that year.
+4. In **Import status**, select one or more publisher rows and use the **MRRO administration** menu. The same action applies to every selected row; rows may be selected separately.
 5. Check **All books**, **Publisher payments**, and **Author payments**. Before using the results, confirm that the calculated licence total equals the fund and that publisher and author totals are each half of it.
 
 ## MRRO administration menu
@@ -18,7 +18,7 @@ Use this first for a new submission. It checks that the sheet is ready, that its
 
 ### Import and freeze selected publisher(s)
 
-Use this after validation for a new submission. It adds that publisher’s current-year books to **All books** and keeps all previous years. If column I contains the publisher’s Google-account email, it changes only that person from Editor to Viewer. Other administrators keep their access.
+Use this after the publisher has completed their sheet, told the administrator it is ready, and it has passed Validate. It adds that publisher’s current-year books to **All books** and keeps all previous years. If column I contains the publisher’s Google-account email, it changes only that person from Editor to Viewer. Other administrators keep their access.
 
 ### Refresh selected publisher import(s)
 
@@ -30,7 +30,7 @@ Use this to prepare a blank submission for the current Settings end year. It cle
 
 ## Preparing the next year
 
-First change **Latest eligible publication year** in Settings to the new year. Then select the publishers in Import status and choose **Reopen and reset selected publisher submission(s)**. Their sheets are cleared and will accept only the new year. When they later submit, use Validate and then Import and freeze.
+First export or download **Publisher payments** and **Author payments** to keep that year’s final snapshot. Changing the eligible years immediately changes the calculations. Then change **Latest eligible publication year** in Settings to the new year. Select the publishers in Import status and choose **Reopen and reset selected publisher submission(s)**. Their sheets are cleared and will accept only the new year. When they later submit, use Validate and then Import and freeze.
 
 ## Checks and colours
 

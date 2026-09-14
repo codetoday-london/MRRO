@@ -15,7 +15,7 @@ When adding a publisher, insert a row above the procedure block. Enter only the 
 
 ## Publisher-sheet checks
 
-Each publisher workbook checks that the year is a whole number from 2000 to 2200, the title and author are present, multiple author names are separated with commas, pages are a positive whole number, price is positive, and classification is 1, 2 or 3. Duplicate ISBNs are deliberately checked only in **All books**, after import.
+Each publisher workbook checks that the year is a whole number from 2000 to 2200, the title and author are present, multiple author names are separated with commas, pages are a positive whole number, and classification is 1, 2 or 3. Price may be blank, zero, or positive; blank and zero-priced books receive no payment. Duplicate ISBNs are deliberately checked only in **All books**, after import.
 
 ## How payments are calculated
 

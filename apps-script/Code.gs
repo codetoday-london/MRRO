@@ -74,7 +74,7 @@ function primePublisher_(src, endYear) {
   sh.getRange('B3').setFormula('=IF(COUNTIF(H9:H1008,"?*")>0,"NOT READY TO SUBMIT — "&COUNTIF(H9:H1008,"?*")&" row(s) need correction.","READY TO SUBMIT")');
   const rule = SpreadsheetApp.newDataValidation().requireNumberEqualTo(endYear).setAllowInvalid(false).setHelpText('Enter the current submission year: ' + endYear + '.').build();
   sh.getRange('A9:A1008').setDataValidation(rule);
-  const formula = '=IF(COUNTA(A9:G9)=0,"",IF(NOT(AND(ISNUMBER(A9),A9=INT(A9),A9=$B$6)),"Year must be the current submission year ("&$B$6&"). ","")&IF(B9="","Book title is required. ","")&IF(OR(D9="",REGEXMATCH(D9,"(?i)(^| )and( |$)|[&%;]|^,|,$|,,")),"Use comma-separated author names only. ","")&IF(NOT(AND(ISNUMBER(E9),E9=INT(E9),E9>0)),"Pages must be a positive whole number. ","")&IF(NOT(AND(ISNUMBER(F9),F9>0)),"Price must be a positive number. ","")&IF(NOT(AND(ISNUMBER(G9),G9=INT(G9),G9>=1,G9<=3)),"Classification must be 1, 2, or 3.",""))';
+  const formula = '=IF(COUNTA(A9:G9)=0,"",IF(NOT(AND(ISNUMBER(A9),A9=INT(A9),A9=$B$6)),"Year must be the current submission year ("&$B$6&"). ","")&IF(B9="","Book title is required. ","")&IF(OR(D9="",REGEXMATCH(D9,"(?i)(^| )and( |$)|[&%;]|^,|,$|,,")),"Use comma-separated author names only. ","")&IF(NOT(AND(ISNUMBER(E9),E9=INT(E9),E9>0)),"Pages must be a positive whole number. ","")&IF(AND(F9<>"",NOT(AND(ISNUMBER(F9),F9>=0))),"Price must be zero or a positive number. ","")&IF(NOT(AND(ISNUMBER(G9),G9=INT(G9),G9>=1,G9<=3)),"Classification must be 1, 2, or 3.",""))';
   sh.getRange('H9').setFormula(formula);
   sh.getRange('H9').copyTo(sh.getRange('H9:H1008'), SpreadsheetApp.CopyPasteType.PASTE_FORMULA);
 }
@@ -270,7 +270,7 @@ function configureMaster_(m) {
   start.getRange('B10').setValue('First update the end year in Settings. Then use Reopen and reset to restore the recorded publisher email as editor, clear that publisher workbook, and set it to accept the new submission year only. Refresh replaces only that publisher’s imported books for the current year.');
   start.getRange('B12').setValue('Yellow = administrator input or action required. In All books: white = current submission year; pale blue = an earlier eligible year; pale red = outside the eligibility range and excluded from calculations. Duplicate ISBN rows are red and take priority over these year colours.');
   start.getRange('B18').setValue('Create the new publisher workbook from the publisher template, name it for the publisher, enter the publisher’s email address in Import status column I, and put its link in column D. Share it with that publisher as an editor when appropriate.');
-  start.getRange('B20').setValue('Publisher sheets check: the publication year exactly matches the current submission year; a book title; an author name using commas between multiple names; positive whole-number pages; a positive price; and classification 1, 2 or 3. Duplicate ISBNs are checked only in All books.');
+  start.getRange('B20').setValue('Publisher sheets check: the publication year exactly matches the current submission year; a book title; an author name using commas between multiple names; positive whole-number pages; a zero, blank or positive price; and classification 1, 2 or 3. A zero or blank price earns no payment. Duplicate ISBNs are checked only in All books.');
   const dataRange = books.getRange(2, 1, books.getMaxRows() - 1, 10);
   const retained = books.getConditionalFormatRules().filter(rule => {
     const condition = rule.getBooleanCondition();

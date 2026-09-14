@@ -12,10 +12,13 @@ function onOpen() {
 }
 
 function rows_() {
-  const m = SpreadsheetApp.getActive(), range = m.getActiveRange(), s = range.getSheet();
-  if (s.getName() !== S || range.getRow() < 2) throw Error('Select one or more publisher rows in Import status.');
-  return Array.from({ length: range.getNumRows() }, (_, i) => {
-    const r = range.getRow() + i, x = s.getRange(r, 1, 1, 9).getDisplayValues()[0];
+  const m = SpreadsheetApp.getActive(), ranges = m.getActiveRangeList().getRanges(), s = ranges[0].getSheet();
+  if (s.getName() !== S || ranges.some(range => range.getSheet().getSheetId() !== s.getSheetId() || range.getRow() < 2)) {
+    throw Error('Select one or more publisher rows in Import status.');
+  }
+  const selectedRows = [...new Set(ranges.flatMap(range => Array.from({ length: range.getNumRows() }, (_, i) => range.getRow() + i)))].sort((a, b) => a - b);
+  return selectedRows.map(r => {
+    const x = s.getRange(r, 1, 1, 9).getDisplayValues()[0];
     return x[0] && x[3] ? [m, s, r, x] : null;
   }).filter(Boolean);
 }
@@ -276,9 +279,9 @@ function configureMaster_(m) {
   status.setColumnWidth(9, 150);
   status.getRange('I2:I19').setBackground('#fff2cc');
   status.getRange(2, 9, status.getMaxRows() - 1, 1).setNumberFormat('@');
-  start.getRange('B7').setValue('In Import status, select one or more publisher rows. Validate checks the submission year and entries. Import and freeze adds the current-year books to All books and changes only the recorded publisher email from editor to viewer.');
+  start.getRange('B7').setValue('There is no Submit button. Publishers tell the administrator separately when their sheet says READY TO SUBMIT. In Import status, select one or more publisher rows and use the MRRO administration menu.');
   start.getRange('A10').setValue('6. Prepare the next annual submission');
-  start.getRange('B10').setValue('First update the end year in Settings. Then use Reopen and reset to restore the recorded publisher email as editor, clear that publisher workbook, and set it to accept the new submission year only. Refresh replaces only that publisher’s imported books for the current year.');
+  start.getRange('B10').setValue('Before changing the year, export Publisher payments and Author payments as that year’s snapshot. Then update the end year in Settings and use Reopen and reset to clear each publisher workbook and set it to accept the new year only.');
   start.getRange('B12').setValue('Yellow = administrator input or action required. In All books: white = current submission year; light blue = an earlier eligible year; dark grey = outside the eligibility range and excluded from calculations. Duplicate ISBN or title rows are red and take priority over these year colours.');
   start.getRange('B18').setValue('Create the new publisher workbook from the publisher template, name it for the publisher, enter the publisher’s email address in Import status column I, and put its link in column D. Share it with that publisher as an editor when appropriate.');
   start.getRange('B20').setValue('Publisher sheets check: the publication year exactly matches the current submission year; a book title; an author name using commas between multiple names; positive whole-number pages; a zero, blank or positive price; and classification 1, 2 or 3. A zero or blank price earns no payment. Duplicate ISBNs and duplicate titles are checked only in All books.');

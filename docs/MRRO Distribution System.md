@@ -5,7 +5,7 @@ The administrator workbook collects publisher book lists, checks them, and calcu
 1. Set the fund and eligible years in the yellow Settings cells.
 2. Publishers fill in their own workbook until it says **READY TO SUBMIT**.
 3. In Import status, record the publisher email address in column I. Validate checks the current submission year. Import and freeze changes only that publisher from editor to viewer and adds a fixed copy of the year's books.
-4. All books retains earlier imports. Current-year books are white; earlier eligible books are pale blue; books outside the eligible Settings years are pale red and excluded from payment calculations. The Problem rows line below the headings lists administrator validation rows, grouping matching duplicate-ISBN row numbers in parentheses. Duplicate ISBN matches are red in every matching row.
+4. All books retains earlier imports. Current-year books are white; earlier eligible books are pale blue; books outside the eligible Settings years are pale red and excluded from payment calculations. The summary row groups matching ISBN and title row numbers in parentheses. Any matching ISBN or non-empty title is flagged, and every matching row is red.
 
 Reopen and reset clears a publisher's input sheet, sets it to the Settings end year, and changes the recorded publisher from viewer to editor. Refresh replaces only that publisher's imported books for the current year.
 
@@ -15,7 +15,7 @@ When adding a publisher, insert a row above the procedure block. Enter only the 
 
 ## Publisher-sheet checks
 
-Each publisher workbook checks that the year is a whole number from 2000 to 2200, the title and author are present, multiple author names are separated with commas, pages are a positive whole number, and classification is 1, 2 or 3. Price may be blank, zero, or positive; blank and zero-priced books receive no payment. Duplicate ISBNs are deliberately checked only in **All books**, after import.
+Each publisher workbook checks that the year is a whole number from 2000 to 2200, the title and author are present, multiple author names are separated with commas, pages are a positive whole number, and classification is 1, 2 or 3. Price may be blank, zero, or positive; blank and zero-priced books receive no payment. Duplicate ISBNs and titles are deliberately checked only in **All books**, after import.
 
 ## How payments are calculated
 

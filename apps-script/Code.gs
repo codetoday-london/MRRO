@@ -129,6 +129,8 @@ function validate() { batch_('validate'); }
 function freezeImport() { batch_('freeze'); }
 function refresh() { batch_('refresh'); }
 function reopenAndReset() { batch_('reopen'); }
+// Compatibility for a menu created before the annual-workflow rename.
+function reopen() { reopenAndReset(); }
 
 function one_(mode, entry) {
   const [m, s, r, x] = entry, publisher = x[0], email = publisherEmail_(x), year = years_(m).end.value;

@@ -9,6 +9,8 @@ The administrator workbook collects publisher book lists, checks them, and calcu
 
 Reopen and reset clears a publisher's input sheet, sets it to the Settings end year, and changes the recorded publisher from viewer to editor. Refresh replaces only that publisher's imported books for the current year.
 
+An empty publisher sheet is valid: it represents no books for that year and imports no rows.
+
 When adding a publisher, insert a row above the procedure block. Enter only the publisher name and workbook link; the status, count, lock and date columns are automatic.
 
 ## Publisher-sheet checks

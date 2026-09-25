@@ -249,7 +249,7 @@ function rebuildPaymentTabs_(m) {
   authorPayments.getRange('B2').setFormula('=ARRAYFORMULA(IF(A2:A="","",SUMIF(\'Author allocation\'!$A$2:$A,A2:A,\'Author allocation\'!$B$2:$B)*Settings!$B$4*0.5))');
   const publisherPayments = m.getSheetByName('Publisher payments');
   publisherPayments.getRange(2, 1, publisherPayments.getMaxRows() - 1, 2).clearContent();
-  publisherPayments.getRange('A2').setFormula('=IFERROR(UNIQUE(FILTER(INDIRECT("\'All books\'!A3:A"),INDIRECT("\'All books\'!A3:A")<>"")),"")');
+  publisherPayments.getRange('A2').setFormula('=IFERROR(UNIQUE(FILTER(INDIRECT("\'All books\'!A3:A"),INDIRECT("\'All books\'!A3:A")<>"",ISNUMBER(INDIRECT("\'All books\'!B3:B")))),"")');
   publisherPayments.getRange('B2').setFormula('=ARRAYFORMULA(IF(A2:A="","",SUMIF(INDIRECT("\'All books\'!A3:A"),A2:A,Calculations!$H$2:$H)*0.5))');
 }
 

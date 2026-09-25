@@ -7,6 +7,7 @@ function onOpen() {
     .addItem('Validate selected publisher(s)', 'validate')
     .addItem('Import and freeze selected publisher(s)', 'freezeImport')
     .addItem('Refresh selected publisher import(s)', 'refresh')
+    .addItem('Reopen selected publisher(s)', 'reopenAccess')
     .addItem('Reopen and reset selected publisher submission(s)', 'reopenAndReset')
     .addToUi();
 }
@@ -111,7 +112,7 @@ function removeCurrentYearRows_(m, publisher, year) {
 }
 
 function confirm_(ui, mode, rows, year) {
-  const action = mode === 'freeze' ? 'import and freeze' : mode === 'refresh' ? 'refresh' : 'reopen and reset';
+  const action = mode === 'freeze' ? 'import and freeze' : mode === 'refresh' ? 'refresh' : mode === 'access' ? 'reopen' : 'reopen and reset';
   const names = rows.map(([, , , x]) => x[0]).join('\n');
   return ui.alert('Confirm ' + action, 'Submission year: ' + year + '\n\nApply this to ' + rows.length + ' publisher(s)?\n\n' + names, ui.ButtonSet.YES_NO) === ui.Button.YES;
 }
@@ -122,7 +123,7 @@ function batch_(mode) {
   if (!confirm_(ui, mode, rows, year)) return;
   const done = [], failed = [];
   rows.forEach(entry => { try { one_(mode, entry); done.push(entry[3][0]); } catch (error) { failed.push(entry[3][0] + ': ' + error.message); } });
-  const title = mode === 'validate' ? 'Validation' : mode === 'freeze' ? 'Import and freeze' : mode === 'refresh' ? 'Refresh' : 'Reopen and reset';
+  const title = mode === 'validate' ? 'Validation' : mode === 'freeze' ? 'Import and freeze' : mode === 'refresh' ? 'Refresh' : mode === 'access' ? 'Reopen' : 'Reopen and reset';
   const report = ['Completed (' + done.length + '): ' + (done.join(', ') || 'none')];
   if (failed.length) report.push('Not changed (' + failed.length + '):\n' + failed.join('\n'));
   ui.alert(title, report.join('\n\n'), ui.ButtonSet.OK);
@@ -131,6 +132,7 @@ function batch_(mode) {
 function validate() { batch_('validate'); }
 function freezeImport() { batch_('freeze'); }
 function refresh() { batch_('refresh'); }
+function reopenAccess() { batch_('access'); }
 function reopenAndReset() { batch_('reopen'); }
 // Compatibility for a menu created before the annual-workflow rename.
 function reopen() { reopenAndReset(); }
@@ -138,6 +140,13 @@ function reopen() { reopenAndReset(); }
 function one_(mode, entry) {
   const [m, s, r, x] = entry, publisher = x[0], email = publisherEmail_(x), year = years_(m).end.value;
   if (/archive/i.test(x[1])) throw Error('Archive rows cannot be changed.');
+  if (mode === 'access') {
+    if (!email) throw Error('Record the publisher email in Import status column I before reopening access.');
+    setPublisherAccess_(source_(x), email, 'editor');
+    s.getRange(r, 6).setValue('OPEN - publisher is editor');
+    log_(m, publisher, 'Reopened access', 'Publisher restored to editor; imported books and submission unchanged');
+    return;
+  }
   if (mode === 'reopen') {
     const src = source_(x);
     if (email) setPublisherAccess_(src, email, 'editor');
@@ -204,12 +213,12 @@ function repairCalculations_(m) {
   const end = Math.max(books.getMaxRows() - 1, 2);
   if (sh.getMaxRows() < end) sh.insertRowsAfter(sh.getMaxRows(), end - sh.getMaxRows());
   const formulas = [
-    '=IF(\'All books\'!F3="","",INT((\'All books\'!F3-1)/100)+1)',
-    '=IF(\'All books\'!G3="","",LOOKUP(\'All books\'!G3,{0,0.0000001,10.0000001,20.0000001,50.0000001,80.0000001,100.0000001,150.0000001},{0,1,2,3,4,5,6,7}))',
-    '=IF(\'All books\'!E3="","",LEN(\'All books\'!E3)-LEN(SUBSTITUTE(\'All books\'!E3,",",""))+1)',
+    '=IF(INDEX(\'All books\'!F:F,ROW()+1)="","",INT((INDEX(\'All books\'!F:F,ROW()+1)-1)/100)+1)',
+    '=IF(INDEX(\'All books\'!G:G,ROW()+1)="","",LOOKUP(INDEX(\'All books\'!G:G,ROW()+1),{0,0.0000001,10.0000001,20.0000001,50.0000001,80.0000001,100.0000001,150.0000001},{0,1,2,3,4,5,6,7}))',
+    '=IF(INDEX(\'All books\'!E:E,ROW()+1)="","",LEN(INDEX(\'All books\'!E:E,ROW()+1))-LEN(SUBSTITUTE(INDEX(\'All books\'!E:E,ROW()+1),",",""))+1)',
     '=IF(C2="","",1/C2)',
-    '=IF(\'All books\'!H3="","",\'All books\'!H3)',
-    '=IF(A2="","",IF(AND(\'All books\'!B3>=Settings!$B$14,\'All books\'!B3<=Settings!$B$15),(A2+B2)*E2,0))',
+    '=IF(INDEX(\'All books\'!H:H,ROW()+1)="","",INDEX(\'All books\'!H:H,ROW()+1))',
+    '=IF(A2="","",IF(AND(INDEX(\'All books\'!B:B,ROW()+1)>=Settings!$B$14,INDEX(\'All books\'!B:B,ROW()+1)<=Settings!$B$15),(A2+B2)*E2,0))',
     '=IF(F2="","",Settings!$B$4)',
     '=IF(F2="","",F2*G2)'
   ];
@@ -220,48 +229,28 @@ function repairCalculations_(m) {
   });
 }
 
-function points_(pages, price, classification) {
-  const a = Math.floor((Number(pages) - 1) / 100) + 1;
-  const p = Number(price);
-  const b = p <= 0 ? 0 : p <= 10 ? 1 : p <= 20 ? 2 : p <= 50 ? 3 : p <= 80 ? 4 : p <= 100 ? 5 : p <= 150 ? 6 : 7;
-  return (a + b) * Number(classification);
+function upgradePaymentFormulas() {
+  const master = SpreadsheetApp.getActive();
+  repairCalculations_(master);
+  rebuildPaymentTabs_(master);
 }
 
 function rebuildPaymentTabs_(m) {
-  const years = years_(m), all = m.getSheetByName(B), last = lastBookDataRow_(all);
-  const rows = last < 3 ? [] : all.getRange(3, 1, last - 2, 8).getValues().filter(row => String(row[0]).trim());
-  const allocation = [], publishers = [];
-  const publisherSet = new Set();
-  rows.forEach(row => {
-    const [publisher, year, , , authors, pages, price, classification] = row;
-    if (!publisherSet.has(publisher)) { publisherSet.add(publisher); publishers.push(publisher); }
-    if (Number(year) < years.start.value || Number(year) > years.end.value || !String(authors).trim()) return;
-    const share = points_(pages, price, classification) / String(authors).split(',').length;
-    String(authors).split(',').forEach(author => allocation.push(["['" + publisher + "'] " + author.trim(), share]));
-  });
+  const all = m.getSheetByName(B), rows = all.getRange(3, 1, all.getMaxRows() - 2, 8).getValues().filter(row => String(row[0]).trim());
+  const allocationSize = rows.reduce((total, row) => total + (String(row[4]).trim() ? String(row[4]).split(',').length : 0), 0);
   const authorAllocation = m.getSheetByName('Author allocation');
-  if (authorAllocation.getMaxRows() - 1 < allocation.length) authorAllocation.insertRowsAfter(authorAllocation.getMaxRows(), allocation.length - (authorAllocation.getMaxRows() - 1));
+  if (authorAllocation.getMaxRows() - 1 < allocationSize) authorAllocation.insertRowsAfter(authorAllocation.getMaxRows(), allocationSize - (authorAllocation.getMaxRows() - 1));
   authorAllocation.getRange(2, 1, authorAllocation.getMaxRows() - 1, 2).clearContent();
-  if (allocation.length) authorAllocation.getRange(2, 1, allocation.length, 2).setValues(allocation);
+  authorAllocation.getRange('A2').setFormula('=ARRAYFORMULA(IFERROR(LET(publishers,INDIRECT("\'All books\'!A3:A"),authors,INDIRECT("\'All books\'!E3:E"),points,Calculations!F2:INDEX(Calculations!F:F,ROWS(\'All books\'!A:A)-1),counts,Calculations!C2:INDEX(Calculations!C:C,ROWS(\'All books\'!A:A)-1),parts,TRIM(SPLIT(authors,",")),pairs,FLATTEN(IF((publishers<>"")*(authors<>"")*(points>0)*(parts<>""),"["&publishers&"] "&parts&"♦"&points/counts,"")),QUERY(SPLIT(FILTER(pairs,pairs<>""),"♦"),"select Col1, Col2",0)),{"",""}))');
   const authorPayments = m.getSheetByName('Author payments');
   authorPayments.getRange(2, 1, authorPayments.getMaxRows() - 1, 2).clearContent();
-  const authorLabels = new Map();
-  allocation.forEach(row => { if (!authorLabels.has(row[0].toLocaleLowerCase())) authorLabels.set(row[0].toLocaleLowerCase(), row[0]); });
-  const authors = [...authorLabels.values()].sort();
-  if (authorPayments.getMaxRows() - 1 < authors.length) authorPayments.insertRowsAfter(authorPayments.getMaxRows(), authors.length - (authorPayments.getMaxRows() - 1));
-  if (authors.length) {
-    authorPayments.getRange(2, 1, authors.length, 1).setValues(authors.map(author => [author]));
-    authorPayments.getRange('B2').setFormula('=SUMIF(\'Author allocation\'!A:A,A2,\'Author allocation\'!B:B)*Settings!$B$4*0.5');
-    authorPayments.getRange('B2').copyTo(authorPayments.getRange(2, 2, authors.length, 1), SpreadsheetApp.CopyPasteType.PASTE_FORMULA);
-  }
+  if (authorPayments.getMaxRows() - 1 < allocationSize) authorPayments.insertRowsAfter(authorPayments.getMaxRows(), allocationSize - (authorPayments.getMaxRows() - 1));
+  authorPayments.getRange('A2').setFormula('=IFERROR(LET(labels,FILTER(\'Author allocation\'!A2:A,\'Author allocation\'!A2:A<>""),keys,UNIQUE(ARRAYFORMULA(LOWER(labels))),SORT(MAP(keys,LAMBDA(key,INDEX(labels,MATCH(key,ARRAYFORMULA(LOWER(labels)),0)))))),"")');
+  authorPayments.getRange('B2').setFormula('=ARRAYFORMULA(IF(A2:A="","",SUMIF(\'Author allocation\'!$A$2:$A,A2:A,\'Author allocation\'!$B$2:$B)*Settings!$B$4*0.5))');
   const publisherPayments = m.getSheetByName('Publisher payments');
-  if (publisherPayments.getMaxRows() - 1 < publishers.length) publisherPayments.insertRowsAfter(publisherPayments.getMaxRows(), publishers.length - (publisherPayments.getMaxRows() - 1));
   publisherPayments.getRange(2, 1, publisherPayments.getMaxRows() - 1, 2).clearContent();
-  if (publishers.length) {
-    publisherPayments.getRange(2, 1, publishers.length, 1).setValues(publishers.map(publisher => [publisher]));
-    publisherPayments.getRange('B2').setFormula('=SUMIF(\'All books\'!A3:A,A2,Calculations!H2:H)*0.5');
-    publisherPayments.getRange('B2').copyTo(publisherPayments.getRange(2, 2, publishers.length, 1), SpreadsheetApp.CopyPasteType.PASTE_FORMULA);
-  }
+  publisherPayments.getRange('A2').setFormula('=IFERROR(UNIQUE(FILTER(INDIRECT("\'All books\'!A3:A"),INDIRECT("\'All books\'!A3:A")<>"")),"")');
+  publisherPayments.getRange('B2').setFormula('=ARRAYFORMULA(IF(A2:A="","",SUMIF(INDIRECT("\'All books\'!A3:A"),A2:A,Calculations!$H$2:$H)*0.5))');
 }
 
 function configureMaster_(m) {
@@ -279,7 +268,7 @@ function configureMaster_(m) {
   status.setColumnWidth(9, 150);
   status.getRange('I2:I19').setBackground('#fff2cc');
   status.getRange(2, 9, status.getMaxRows() - 1, 1).setNumberFormat('@');
-  start.getRange('B7').setValue('There is no Submit button. Publishers tell the administrator separately when their sheet says READY TO SUBMIT. In Import status, select one or more publisher rows and use the MRRO administration menu.');
+  start.getRange('B7').setValue('There is no Submit button. Publishers tell the administrator separately when their sheet says READY TO SUBMIT. In Import status, select one or more publisher rows and use the MRRO administration menu. For corrections to an imported submission, Reopen selected publisher(s), then Refresh when ready; Reopen and reset clears entries for a new annual submission.');
   start.getRange('A10').setValue('6. Prepare the next annual submission');
   start.getRange('B10').setValue('Before changing the year, export Publisher payments and Author payments as that year’s snapshot. Then update the end year in Settings and use Reopen and reset to clear each publisher workbook and set it to accept the new year only.');
   start.getRange('B12').setValue('Yellow = administrator input or action required. In All books: white = current submission year; light blue = an earlier eligible year; dark grey = outside the eligibility range and excluded from calculations. Duplicate ISBN or title rows are red and take priority over these year colours.');

@@ -24,6 +24,10 @@ Use this after the publisher has completed their sheet, told the administrator i
 
 Use this when a publisher changes a submission that has already been imported for the current year. It replaces only that publisher’s current-year books. It does not remove older years, then rebuilds the calculations and both payment lists.
 
+### Reopen selected publisher(s)
+
+Use this when a publisher needs to correct a previously imported submission. It restores the email in **Import status** column I from Viewer to Editor without clearing the publisher sheet or changing any imported books. When their sheet is ready again, use **Refresh selected publisher import(s)** to replace that publisher’s current-year books and return them to Viewer. This is different from **Reopen and reset**, which clears the publisher’s entry area.
+
 ### Reopen and reset selected publisher submission(s)
 
 Use this to prepare a blank submission for the current Settings end year. It clears the publisher’s entry area and sets the required year. If column I contains the publisher’s email, it changes that person from Viewer back to Editor. It does not remove historic books from **All books**.
@@ -37,6 +41,8 @@ First export or download **Publisher payments** and **Author payments** to keep 
 Publisher sheets require the current year, a title, an author name (commas between multiple authors), positive whole-number pages, a classification of 1, 2, or 3, and a blank, zero, or positive price. Blank and zero prices are valid but earn no payment.
 
 Duplicate ISBNs and duplicate titles are checked in **All books**, not on the publisher sheet. Every matching row is red. In All books, dark grey means older than the eligible period and excluded from payment; light blue means an earlier eligible year; white means the current submission year.
+
+If a flagged book must be excluded, the administrator can delete its entire **All books** row, including rows in the middle of the sheet. The calculated points and both payment sheets update to reflect the books that remain; verify that the licence total still equals the fund and that the publisher and author totals are each half of it. This does not change the publisher’s submission: a later **Refresh** of that publisher can reintroduce the removed book unless the source submission is corrected first.
 
 ## Adding a publisher
 

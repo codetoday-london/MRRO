@@ -162,15 +162,16 @@ function one_(mode, entry) {
   }
   const { data } = submission_(m, x);
   const existing = currentYearRows_(m, publisher, year);
+  const importedThisYear = x[1] === 'IMPORTED - ' + year + ' frozen snapshot';
   if (mode === 'validate') {
-    s.getRange(r, 2).setValue('READY - validated for ' + year);
+    if (!importedThisYear) s.getRange(r, 2).setValue('READY - validated for ' + year);
     s.getRange(r, 5).setValue('READY TO SUBMIT - verified');
     s.getRange(r, 6).setValue('Not locked');
     log_(m, publisher, 'Validated', data.length + ' records ready for ' + year);
     return;
   }
-  if (mode === 'freeze' && existing.length) throw Error('This publisher already has ' + existing.length + ' imported book(s) for ' + year + '. Use Refresh instead.');
-  if (mode === 'refresh' && !existing.length) throw Error('No imported books exist for ' + year + '; use Import and freeze.');
+  if (mode === 'freeze' && (existing.length || importedThisYear)) throw Error('This publisher already has an imported submission for ' + year + '. Use Refresh instead.');
+  if (mode === 'refresh' && !existing.length && !importedThisYear) throw Error('No imported submission exists for ' + year + '; use Import and freeze.');
   const src = source_(x);
   if (email) setPublisherAccess_(src, email, 'viewer');
   if (mode === 'refresh') removeCurrentYearRows_(m, publisher, year);

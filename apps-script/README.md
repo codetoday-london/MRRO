@@ -10,4 +10,4 @@ The administrator records one publisher email address in column I. Import and fr
 
 Calculations use row-position lookups, and the publisher and author payment tabs use live formulas, so deleting a row anywhere in **All books** updates payments automatically without a trigger. After installing the script, run `upgradePaymentFormulas` once from the bound script editor for the live master and again for the administrator template. It changes only the calculation and payment tabs; it does not touch publisher submissions, sharing, imported books, or Settings.
 
-An empty submission is valid and records a zero-book annual import.
+An empty submission is valid and records a zero-book annual import. Refresh accepts a previously imported submission even after its last current-year row was manually deleted; a first-time submission must still use Import and freeze.

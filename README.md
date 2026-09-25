@@ -1,6 +1,8 @@
 # MRRO
 MALTA REPROGRAPHIC RIGHTS ORGANISATION
 
+See the [changelog](CHANGELOG.md) for updates to the Google Sheets administrator workflow.
+
 **MRRO.py** - Reads in separate publisher submissions in the form of spreadsheets (Excel)
 following the default template. Works out payout per book based on given formula.
 Exports three CSV files:
